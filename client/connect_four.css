@@ -4,12 +4,37 @@
     --player1-color: yellow;
     --player2-color: red;
     --shadow-color: rgba(0, 0, 0, 0.445);
-    --stone-size: 50px;
-    --board-spacing: 20px;
+    --stone-size: 25px;
+    --board-spacing: 10px;
 }
+
+@media all and (min-width: 360px) and (min-height: 300px) {
+    :root {
+        --stone-size: 30px;
+        --board-spacing: 15px;
+    }
+}
+
+@media all and (min-width: 600px) and (min-height: 500px) {
+    :root {
+        --stone-size: 50px;
+        --board-spacing: 20px;
+    }
+}
+
+@media all and (min-width: 800px) and (min-height: 650px) {
+    :root {
+        --stone-size: 70px;
+        --board-spacing: 30px;
+    }
+}
+
 body {
     background-color: var(--background-color);
     font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 table.connect_four {
@@ -21,7 +46,7 @@ table.connect_four {
 }
 table.connect_four td {
     height: var(--stone-size);
-    width: var(--stone-size);
+    min-width: var(--stone-size);
     padding: 0;
     border: solid var(--plastic-color) 0px;
     border-radius: calc(var(--stone-size) / 2);
