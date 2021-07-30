@@ -6,7 +6,7 @@
     --shadow-color: grey;
     --plastic-shadow-color: darkblue;
     --stone-size: 50px;
-    --board-spacing: 10px;
+    --board-spacing: 20px;
 }
 body {
     background-color: var(--background-color);
@@ -18,6 +18,7 @@ table.connect_four {
     background-color: var(--plastic-color);
     border-spacing: var(--board-spacing);
     border-radius: calc(var(--stone-size) / 2 + var(--board-spacing));
+	box-shadow: 2px 2px 5px 5px var(--shadow-color);
 }
 table.connect_four td {
     height: var(--stone-size);
@@ -27,4 +28,11 @@ table.connect_four td {
     border-radius: calc(var(--stone-size) / 2);
     background-color: var(--background-color);
 	box-shadow: 5px 5px 10px var(--shadow-color) inset, 0 0 1px 3px var(--plastic-shadow-color);
+}
+
+table.connect_four td.player1 {
+    background-color: var(--player1-color);
+}
+table.connect_four td.player2 {
+    background-color: var(--player2-color);
 }
