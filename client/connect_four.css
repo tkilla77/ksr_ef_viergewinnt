@@ -1,5 +1,6 @@
 :root {
     --background-color: rgb(241, 233, 201);
+    --hover-color: rgb(180, 171, 134);
     --plastic-color: blue;
     --player1-color: yellow;
     --player2-color: red;
@@ -59,4 +60,7 @@ table.connect_four td.player1 {
 }
 table.connect_four td.player2 {
     background-color: var(--player2-color);
+}
+table.connect_four td:not(*.full):hover {
+    background-color: var(--hover-color);
 }
