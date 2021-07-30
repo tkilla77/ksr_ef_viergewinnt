@@ -3,8 +3,7 @@
     --plastic-color: blue;
     --player1-color: yellow;
     --player2-color: red;
-    --shadow-color: grey;
-    --plastic-shadow-color: darkblue;
+    --shadow-color: rgba(0, 0, 0, 0.445);
     --stone-size: 50px;
     --board-spacing: 20px;
 }
@@ -27,7 +26,7 @@ table.connect_four td {
     border: solid var(--plastic-color) 0px;
     border-radius: calc(var(--stone-size) / 2);
     background-color: var(--background-color);
-	box-shadow: 5px 5px 10px var(--shadow-color) inset, 0 0 1px 3px var(--plastic-shadow-color);
+	box-shadow: 5px 5px 10px var(--shadow-color) inset, 0 0 1px 3px var(--shadow-color);
 }
 
 table.connect_four td.player1 {
