@@ -1,0 +1,30 @@
+:root {
+    --background-color: rgb(241, 233, 201);
+    --plastic-color: blue;
+    --player1-color: yellow;
+    --player2-color: red;
+    --shadow-color: grey;
+    --plastic-shadow-color: darkblue;
+    --stone-size: 50px;
+    --board-spacing: 10px;
+}
+body {
+    background-color: var(--background-color);
+    font-family: sans-serif;
+}
+
+table.connect_four {
+    border: none;
+    background-color: var(--plastic-color);
+    border-spacing: var(--board-spacing);
+    border-radius: calc(var(--stone-size) / 2 + var(--board-spacing));
+}
+table.connect_four td {
+    height: var(--stone-size);
+    width: var(--stone-size);
+    padding: 0;
+    border: solid var(--plastic-color) 0px;
+    border-radius: calc(var(--stone-size) / 2);
+    background-color: var(--background-color);
+	box-shadow: 5px 5px 10px var(--shadow-color) inset, 0 0 1px 3px var(--plastic-shadow-color);
+}
