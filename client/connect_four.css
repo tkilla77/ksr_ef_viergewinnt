@@ -6,27 +6,27 @@
     --player2-color: red;
     --shadow-color: rgba(0, 0, 0, 0.445);
     --stone-size: 25px;
-    --board-spacing: 10px;
+    --board-spacing: 5px;
 }
 
 @media all and (min-width: 360px) and (min-height: 300px) {
     :root {
         --stone-size: 30px;
-        --board-spacing: 15px;
+        --board-spacing: 7px;
     }
 }
 
 @media all and (min-width: 600px) and (min-height: 500px) {
     :root {
         --stone-size: 50px;
-        --board-spacing: 20px;
+        --board-spacing: 10px;
     }
 }
 
 @media all and (min-width: 800px) and (min-height: 650px) {
     :root {
         --stone-size: 70px;
-        --board-spacing: 30px;
+        --board-spacing: 15px;
     }
 }
 
@@ -38,29 +38,34 @@ body {
     align-items: center;
 }
 
-table.connect_four {
-    border: none;
+.connect_four {
+    border: solid var(--board-spacing) var(--plastic-color);
     background-color: var(--plastic-color);
-    border-spacing: var(--board-spacing);
-    border-radius: calc(var(--stone-size) / 2 + var(--board-spacing));
+    border-radius: calc(var(--stone-size) / 2 + calc(var(--board-spacing) * 2));
 	box-shadow: 2px 2px 5px 5px var(--shadow-color);
 }
-table.connect_four td {
+
+.connect_four div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+.connect_four button {
     height: var(--stone-size);
     min-width: var(--stone-size);
-    padding: 0;
-    border: solid var(--plastic-color) 0px;
+    margin: var(--board-spacing);
+    border: solid 0px var(--plastic-color);
     border-radius: calc(var(--stone-size) / 2);
     background-color: var(--background-color);
 	box-shadow: 5px 5px 10px var(--shadow-color) inset, 0 0 1px 3px var(--shadow-color);
 }
-
-table.connect_four td.player1 {
+.connect_four button[data-state="1"] {
     background-color: var(--player1-color);
 }
-table.connect_four td.player2 {
+.connect_four button[data-state="2"] {
     background-color: var(--player2-color);
 }
-table.connect_four td:not(*.full):hover {
+.connect_four button[data-state="0"]:hover {
     background-color: var(--hover-color);
 }
