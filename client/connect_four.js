@@ -1,4 +1,4 @@
-/* A game state of connect-four. */
+/* State and behavior for a game of connect-four. */
 class ConnectFour {
     /* Expects JSON with properties
        width > 0
@@ -135,5 +135,6 @@ var gameJson = {
 }
 var game = new ConnectFour(gameJson);
 var grid = document.getElementById("grid")
+var winner = document.getElementById("winner")
 game.fillHtml(grid, winner);
 game.installHandlers(grid, winner);
