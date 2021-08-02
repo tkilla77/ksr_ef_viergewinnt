@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Vier gewinnt!</title>
+        <link href="/static/connect_four.css" rel="stylesheet">
+        <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+        <link rel="icon" type="image/png" href="/static/favicon.png" sizes="96x96">
+        <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/static/apple-touch-icon.png">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="/static/connect_four.js" async></script>
+    </head>
+    <body>
+        <h1>Vier gewinnt</h1>
+        <p>Wer gewinnt? <span id="winner"><span class="name">Vier</span> gewinnt!</span></p>
+        <div class="connect_four" id="grid">
+            {% for row in range(6) %}
+            <div>
+                {% for column in range(7) %}
+                <button data-state="0">0</button>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </body>
+</html>

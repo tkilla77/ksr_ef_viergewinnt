@@ -1,11 +1,12 @@
-/* State and behavior for a game of connect-four. */
+/** State and behavior for a game of connect-four. */
 class ConnectFour {
-    /* Expects JSON with properties
-       width > 0
-       height > 0
-       cells: a number array with size width*height and contents of 0-2
-              with 0=empty,1=player1,2=player2
-    */ 
+    /**
+     * Expects JSON with properties
+     * width > 0
+     * height > 0
+     * cells: a number array with size width*height and contents of 0-2
+     *        with 0=empty,1=player1,2=player2
+     */ 
     constructor(json) {
         this.width = json.width;
         this.height = json.height;
@@ -16,8 +17,8 @@ class ConnectFour {
         if (this.cells.length != this.width * this.height) throw new Error("Illegal cell size");
     }
 
-    /* Fills the given HTML table cells (TD elements) adding the contents matching
-       the game state. */
+    /** Fills the given HTML table cells (TD elements) adding the contents matching
+      * the game state. */
     fillHtml(grid, winner) {
         var board = grid.getElementsByTagName("button");
         if (board.length != this.cells.length) throw new Error("Size mismatch");
@@ -48,7 +49,7 @@ class ConnectFour {
         }        
     }
 
-    /* Handles the click / press on a button on the grid. */
+    /** Handles the click / press on a button on the grid. */
     updateGameState(index) {
         if (this.winner) {
             return;
@@ -68,8 +69,8 @@ class ConnectFour {
         // Otherwise: column is already full - ignore.
     }
 
-    /* Check if there is a winner after filling the cell at index.
-       Sets ConnectFour.winner to the player winning. */
+    /** Check if there is a winner after filling the cell at index.
+      * Sets ConnectFour.winner to the player winning. */
     checkWinner(index) {
         const column = index % this.width;
         const row = (index - column) / this.width;
@@ -103,8 +104,8 @@ class ConnectFour {
         }
     }
 
-    /* Counts the winning streak in one direction defined by the
-       increment. */
+    /** Counts the winning streak in one direction defined by the
+      * increment. */
     countSameDirection(player, col, row, colIncrement, rowIncrement) {
         // Count the number of equal slots in one direction.
         let count = 0;
@@ -127,14 +128,23 @@ class ConnectFour {
     }
 }
 
-var gameJson = {
-    width: 7,
-    height: 6,
-    cells: new Array(42).fill(0),
-    player: 1,
+/** A connection to the ConnectFour server. */
+class ConnectFourConnection {
+    async newGame() {
+        var json = await fetch("/newgame");
+        return json.json();
+    }
 }
-var game = new ConnectFour(gameJson);
+
+var connection = new ConnectFourConnection();
+var gameRequest = connection.newGame();
+
 var grid = document.getElementById("grid")
 var winner = document.getElementById("winner")
-game.fillHtml(grid, winner);
-game.installHandlers(grid, winner);
+
+gameRequest.then(response => {
+    var game = new ConnectFour(response);
+    game.fillHtml(grid, winner);
+    game.installHandlers(grid, winner);
+});
+
