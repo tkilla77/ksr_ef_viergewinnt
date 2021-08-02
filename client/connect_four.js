@@ -68,6 +68,8 @@ class ConnectFour {
         // Otherwise: column is already full - ignore.
     }
 
+    /* Check if there is a winner after filling the cell at index.
+       Sets ConnectFour.winner to the player winning. */
     checkWinner(index) {
         const column = index % this.width;
         const row = (index - column) / this.width;
@@ -104,7 +106,7 @@ class ConnectFour {
     /* Counts the winning streak in one direction defined by the
        increment. */
     countSameDirection(player, col, row, colIncrement, rowIncrement) {
-        // Count the number of equal slots in all 8 directions.
+        // Count the number of equal slots in one direction.
         let count = 0;
         while (count < 3) {
             // Move in the given direction.
@@ -115,14 +117,13 @@ class ConnectFour {
                 break;
             }
             // Look at the current cell and bail out if it's not our color.
-            if (this.cells[row * this.width + col] == player) {
-                count++;
-            } else {
+            if (this.cells[row * this.width + col] != player) {
                 break;
             }
+            // Otherwise: continue
+            count++;
         }
         return count;
-
     }
 }
 
