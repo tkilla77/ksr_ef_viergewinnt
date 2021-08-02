@@ -18,7 +18,7 @@ class ConnectFour {
 
     /* Fills the given HTML table cells (TD elements) adding the contents matching
        the game state. */
-    fillHtml(grid) {
+    fillHtml(grid, winner) {
         var board = grid.getElementsByTagName("button");
         if (board.length != this.cells.length) throw new Error("Size mismatch");
         for (let i = 0; i < board.length; i++) {
@@ -27,9 +27,14 @@ class ConnectFour {
             boardCell.setAttribute("data-state", state.toString());
             boardCell.innerHTML = state.toString();
         }
+        if (this.winner) {
+            winner.classList.add("won");
+            winner.getElementsByClassName("name").item(0).innerHTML = this.winner == 1 ? "Gelb" : "Rot";
+        }
+
     }
 
-    installHandlers(grid) {
+    installHandlers(grid, winner) {
         let index = 0;
         for (let button of grid.getElementsByTagName("button")) {
             // Use a constant value that will be captured in the 
@@ -37,7 +42,7 @@ class ConnectFour {
             const buttonIndex = index;
             button.addEventListener("click", () => {
                 this.updateGameState(buttonIndex);
-                this.fillHtml(grid);
+                this.fillHtml(grid, winner);
             });
             index++;
         }        
@@ -93,7 +98,6 @@ class ConnectFour {
                 || upperRight + lowerLeft >= 3
                 || left + right >= 3) {
             this.winner = player;
-            document.getElementById("winner").innerHTML = this.winner == 1 ? "Gelb" : "Rot";
         }
     }
 
@@ -130,5 +134,5 @@ var gameJson = {
 }
 var game = new ConnectFour(gameJson);
 var grid = document.getElementById("grid")
-game.fillHtml(grid);
-game.installHandlers(grid);
+game.fillHtml(grid, winner);
+game.installHandlers(grid, winner);
