@@ -32,9 +32,11 @@ class ConnectFour {
     installHandlers(grid) {
         let index = 0;
         for (let button of grid.getElementsByTagName("button")) {
+            // Use a constant value that will be captured in the 
+            // event listener.
             const buttonIndex = index;
             button.addEventListener("click", () => {
-                this.handleButtonPress(buttonIndex);
+                this.updateGameState(buttonIndex);
                 this.fillHtml(grid);
             });
             index++;
@@ -42,7 +44,7 @@ class ConnectFour {
     }
 
     /* Handles the click / press on a button on the grid. */
-    handleButtonPress(index) {
+    updateGameState(index) {
         let column = index % this.width;
         let cell = undefined;
         for (let row = this.height - 1; row >= 0; row--) {
