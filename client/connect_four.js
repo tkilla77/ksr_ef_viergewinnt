@@ -93,6 +93,7 @@ class ConnectFour {
                 || upperRight + lowerLeft >= 3
                 || left + right >= 3) {
             this.winner = player;
+            document.getElementById("winner").innerHTML = this.winner == 1 ? "Gelb" : "Rot";
         }
     }
 
