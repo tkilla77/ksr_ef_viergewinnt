@@ -16,10 +16,14 @@
             {% for row in range(6) %}
             <div>
                 {% for column in range(7) %}
-                <button data-state="0">0</button>
+                <button data-state="0"></button>
                 {% endfor %}
             </div>
             {% endfor %}
+        </div>
+        <div>
+            <button id="newgame">Neues Spiel</button>
+            <span id="state">unknown</span>
         </div>
     </body>
 </html>
