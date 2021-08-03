@@ -84,9 +84,9 @@ class ConnectFour {
         const decrement = i => i-1;
         const identity = i => i;
 
-        // Count the number of equal slots in all 8 directions.
+        // Count the number of equal slots in all 7 directions.
+        // Above the current cell must be empty.
         let upperLeft = countFunction(decrement, decrement);
-        let up = countFunction(identity, decrement);
         let upperRight = countFunction(increment, decrement);
         let left = countFunction(decrement, identity);
         let right = countFunction(increment, identity);
@@ -97,7 +97,7 @@ class ConnectFour {
         // We have a winner if the total is 3 or more in any of the four
         // directions (the 4th is the current cell).
         if (upperLeft + lowerRight >= 3
-                || up + down >= 3
+                || down >= 3
                 || upperRight + lowerLeft >= 3
                 || left + right >= 3) {
             this.winner = player;
