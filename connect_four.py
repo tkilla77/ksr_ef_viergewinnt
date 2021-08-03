@@ -38,22 +38,24 @@ class ConnectFour:
         if player != self.next:
             raise Exception("not your turn")
 
-        if self.winner:
-            raise Exception("game over")
+        if column < 0 or column >= self.width:
+            raise Exception(f"illegal column {column}")
 
-        for row in range(self.height, -1):
-            if row < 0:
-                raise Exception("No empty slots in column")
+        if self.winner:
+            raise Exception(f"game over, player {self.winner} has already won")
+
+        for row in reversed(range(self.height)):
             index = row * self.width + column
             if self.cells[index] == 0:
                 self.cells[index] = self.next
                 self.next = self.next == 1 and 2 or 1
                 self.winner = self.determineWinner(index)
                 return
+        raise Exception(f"No empty slots in column {column}")
 
     def determineWinner(self, index):
         column = index % self.width
-        row = (index - column) / self.width
+        row = (index - column) // self.width
         player = self.cells[index]
 
         def increment(i):
