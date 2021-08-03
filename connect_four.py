@@ -8,6 +8,8 @@ class ConnectFour:
         self.height = height
         self.next = 1
         self.winner = None
+        self.player1 = None
+        self.player2 = None
     
     def toJson(self, session_id):
         return json.dumps({
@@ -17,7 +19,21 @@ class ConnectFour:
             "next": self.next,
             "player": self.getPlayer(session_id),
             "winner": self.winner,
+            "state": self.getState(),
         }, indent=4)
+    
+    def getState(self):
+        if self.winner:
+            return "ended"
+        if self.player1 and self.player2:
+            return "running"
+        return "waiting"
+    
+    def dropPlayer(self, session_id):
+        if self.player1 == session_id:
+            self.player1 = None
+        if self.player2 == session_id:
+            self.player2 = None
     
     def setPlayer1(self, session_id):
         self.player1 = session_id

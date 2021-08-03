@@ -47,11 +47,7 @@ class ConnectFourConnection {
     constructor(game, stateArea) {
         this.game = game;
         this.stateArea = stateArea;
-        this.updateState("initial");
-    }
-
-    updateState(newState) {
-        this.state = newState;
+        this.state = "initial";
         this.stateArea.innerHTML = this.state;
     }
 
@@ -61,27 +57,35 @@ class ConnectFourConnection {
             newState = "won"
         } else if (json.winner) {
             newState = "lost"
+        } else if (json.state == "waiting") {
+            newState = "waiting";
         } else if (json.next == json.player) {
             newState = "myturn";
         } else {
-            newState = "yourturn";
+            newState = "theirturn";
         }
-        this.state = newState;
-        this.stateArea.innerHTML = this.state;
+        if (newState != this.state) {
+            this.state = newState;
+            this.stateArea.innerHTML = this.state;
+            game.update(json);
+        }
     }
     async newGame() {
         var response = await fetch("/newgame");
         var json = await response.json();
         this.updateStateFromJson(json);
-        game.update(json);
+        this.pollState();
     }
 
     async currentGame() {
+        this.fetchCurrentGame();
+        this.pollState();
+    }
+
+    async fetchCurrentGame() {
         var response = await fetch("/currentgame");
         var json = await response.json();
         this.updateStateFromJson(json);
-        game.update(json);
-        this.pollState();
     }
 
     // wait ms milliseconds
@@ -89,10 +93,11 @@ class ConnectFourConnection {
         return new Promise(r => setTimeout(r, ms));
     }
     
+    /** Poll the current game while it's their turn. */
     async pollState() {
-        while (this.state == "yourturn") {
+        while (this.state == "theirturn" || this.state == "waiting") {
             await this.wait(1000);
-            await this.currentGame();
+            await this.fetchCurrentGame();
         }
     }
     
@@ -103,7 +108,6 @@ class ConnectFourConnection {
         var response = await fetch("/move?column="+column);
         var json = await response.json();
         this.updateStateFromJson(json);
-        game.update(json);
         this.pollState();
     }
 
@@ -112,9 +116,9 @@ class ConnectFourConnection {
         for (let button of grid.getElementsByTagName("button")) {
             // Use a constant value that will be captured in the 
             // event listener.
-            const column = index % 7;
+            const buttonIndex = index;
             button.addEventListener("click", () => {
-                this.move(column);
+                this.move(buttonIndex % game.width);
             });
             index++;
         }        

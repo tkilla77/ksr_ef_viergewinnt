@@ -35,6 +35,8 @@ def newgame():
         try:
             app.logger.info(f"forgetting old games for {session_id}")
             oldgame = games.pop(session_id)
+            if oldgame:
+                oldgame.dropPlayer(session_id)
             lonely_games.remove(oldgame)
         except (KeyError, ValueError):
             pass
