@@ -1,11 +1,71 @@
-/* State and behavior for a game of connect-four. */
-class ConnectFour {
-    /* Expects JSON with properties
-       width > 0
-       height > 0
-       cells: a number array with size width*height and contents of 0-2
-              with 0=empty,1=player1,2=player2
-    */ 
+/**
+ * The UI of a game of connect-four.
+ */
+class ConnectFourView {
+    /**
+     * Creates a new view that will update the given button grid and winner area.
+     *
+     * @param {Element} grid 
+     * @param {Element} winner 
+     */
+    constructor(grid, winner) {
+        this.grid = grid;
+        this.winner = winner;
+    }
+
+    /**
+     * Connects this view to the given game.
+     * 
+     * @param {ConnectFourModel} game 
+     */
+    connectToGame(game) {
+        let index = 0;
+        for (let button of this.grid.getElementsByTagName("button")) {
+            // Use a constant value that will be captured in the 
+            // event listener. Use module to compute the column from the
+            // button index.
+            const column = index % game.width;
+            button.addEventListener("click", () => {
+                game.insertPiece(column);
+                this.fillHtml(game);
+            });
+            index++;
+        }        
+    }
+
+    /**
+     * Fills the given HTML table cells (TD elements) adding the contents matching
+     * the game state.
+     * 
+     * @param {ConnectFourModel} game 
+     */
+    fillHtml(game) {
+        var board = this.grid.getElementsByTagName("button");
+        if (board.length != game.cells.length) throw new Error("Size mismatch");
+        for (let i = 0; i < board.length; i++) {
+            var state = game.cells[i];
+            var boardCell = board[i];
+            boardCell.setAttribute("data-state", state.toString());
+            boardCell.innerHTML = state.toString();
+        }
+        if (game.winner) {
+            this.winner.classList.add("won");
+            this.winner.getElementsByClassName("name").item(0).innerHTML = game.winner == 1 ? "Gelb" : "Rot";
+        }
+    }
+}
+
+/**
+ * State and behavior for a game of connect-four.
+ */
+class ConnectFourModel {
+    /**
+     * Expects JSON with properties
+     * width > 0
+     * height > 0
+     * cells: a number array with size width*height and contents of 0-2
+     *        with 0=empty,1=player1,2=player2
+     */ 
     constructor(json) {
         this.width = json.width;
         this.height = json.height;
@@ -16,64 +76,36 @@ class ConnectFour {
         if (this.cells.length != this.width * this.height) throw new Error("Illegal cell size");
     }
 
-    /* Fills the given HTML table cells (TD elements) adding the contents matching
-       the game state. */
-    fillHtml(grid, winner) {
-        var board = grid.getElementsByTagName("button");
-        if (board.length != this.cells.length) throw new Error("Size mismatch");
-        for (let i = 0; i < board.length; i++) {
-            var state = this.cells[i];
-            var boardCell = board[i];
-            boardCell.setAttribute("data-state", state.toString());
-            boardCell.innerHTML = state.toString();
-        }
+    /**
+     * Insert a game piece in the given column.
+     */
+     insertPiece(column) {
         if (this.winner) {
-            winner.classList.add("won");
-            winner.getElementsByClassName("name").item(0).innerHTML = this.winner == 1 ? "Gelb" : "Rot";
+            throw new Error(`Game has already ended`);
         }
-
-    }
-
-    installHandlers(grid, winner) {
-        let index = 0;
-        for (let button of grid.getElementsByTagName("button")) {
-            // Use a constant value that will be captured in the 
-            // event listener.
-            const buttonIndex = index;
-            button.addEventListener("click", () => {
-                this.updateGameState(buttonIndex);
-                this.fillHtml(grid, winner);
-            });
-            index++;
-        }        
-    }
-
-    /* Handles the click / press on a button on the grid. */
-    updateGameState(index) {
-        if (this.winner) {
-            return;
-        }
-        let column = index % this.width;
         let cell = undefined;
         for (let row = this.height - 1; row >= 0; row--) {
             let lowestEmptyCellIndex = this.width * row + column;
             cell = this.cells[lowestEmptyCellIndex];
             if (cell == 0) {
+                // We found an empty cell:
+                // 1) Change the state of the cell.
                 this.cells[lowestEmptyCellIndex] = this.player;
+                // 2) Toggle the next player.
                 this.player = this.player == 1 ? 2 : 1;
-                this.checkWinner(index);
+                // 3) Check if the game has ended.
+                this.checkWinner(row, column);
                 return;
             }
         }
-        // Otherwise: column is already full - ignore.
+        // Otherwise: column is already full.
+        throw new Error(`illegal column ${column}`);
     }
 
-    /* Check if there is a winner after filling the cell at index.
+    /* Check if there is a winner after filling the cell at row / column.
        Sets ConnectFour.winner to the player winning. */
-    checkWinner(index) {
-        const column = index % this.width;
-        const row = (index - column) / this.width;
-        const player = this.cells[index];
+    checkWinner(row, column) {
+        const player = this.cells[row * this.width + column];
 
         let countFunction = (colIncrement, rowIncrement) => {
             return this.countSameDirection(player, column, row, colIncrement, rowIncrement);
@@ -133,8 +165,8 @@ var gameJson = {
     cells: new Array(42).fill(0),
     player: 1,
 }
-var game = new ConnectFour(gameJson);
+var game = new ConnectFourModel(gameJson);
 var grid = document.getElementById("grid")
 var winner = document.getElementById("winner")
-game.fillHtml(grid, winner);
-game.installHandlers(grid, winner);
+var view = new ConnectFourView(grid, winner);
+view.connectToGame(game);
