@@ -22,8 +22,8 @@ class ConnectFourView {
         let index = 0;
         for (let button of this.grid.getElementsByTagName("button")) {
             // Use a constant value that will be captured in the 
-            // event listener. Use module to compute the column from the
-            // button index.
+            // event listener. Use modul operator to compute the column
+            // from the button index.
             const column = index % game.width;
             button.addEventListener("click", () => {
                 game.insertPiece(column);
@@ -34,17 +34,16 @@ class ConnectFourView {
     }
 
     /**
-     * Fills the given HTML table cells (TD elements) adding the contents matching
-     * the game state.
+     * Updates the view (button elements) to match the game state.
      * 
      * @param {ConnectFourModel} game 
      */
-    fillHtml(game) {
-        var board = this.grid.getElementsByTagName("button");
+     fillHtml(game) {
+        let board = this.grid.getElementsByTagName("button");
         if (board.length != game.cells.length) throw new Error("Size mismatch");
         for (let i = 0; i < board.length; i++) {
-            var state = game.cells[i];
-            var boardCell = board[i];
+            let state = game.cells[i];
+            let boardCell = board[i];
             boardCell.setAttribute("data-state", state.toString());
             boardCell.innerHTML = state.toString();
         }
@@ -116,7 +115,7 @@ class ConnectFourModel {
         const identity = i => i;
 
         // Count the number of equal slots in all 8 directions.
-        let upperLeft = countFunction(decrement, decrement);
+        let upperLeft = countFunction(decrement, decrement);    
         let up = countFunction(identity, decrement);
         let upperRight = countFunction(increment, decrement);
         let left = countFunction(decrement, identity);
@@ -159,14 +158,14 @@ class ConnectFourModel {
     }
 }
 
-var gameJson = {
+let gameJson = {
     width: 7,
     height: 6,
     cells: new Array(42).fill(0),
     player: 1,
 }
-var game = new ConnectFourModel(gameJson);
-var grid = document.getElementById("grid")
-var winner = document.getElementById("winner")
-var view = new ConnectFourView(grid, winner);
+let game = new ConnectFourModel(gameJson);
+let grid = document.getElementById("grid")
+let winner = document.getElementById("winner")
+const view = new ConnectFourView(grid, winner);
 view.connectToGame(game);
