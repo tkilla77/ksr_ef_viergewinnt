@@ -1,54 +1,54 @@
-/** State and behavior for a game of connect-four. */
-class ConnectFour {
-    connectToDom(grid, winner) {
+/**
+ * The UI of a game of connect-four.
+ */
+ class ConnectFourView {
+    /**
+     * Creates a new view that will update the given button grid and winner area.
+     *
+     * @param {Element} grid 
+     * @param {Element} winner 
+     */
+    constructor(grid, winner) {
         this.grid = grid;
-        this.winnerSpan = winner;
+        this.winner = winner;
     }
 
     /**
-     * Expects JSON with properties
-     * width > 0
-     * height > 0
-     * cells: a number array with size width*height and contents of 0-2
-     *        with 0=empty,1=player1,2=player2
-     */ 
-    update(json) {
-        this.width = json.width;
-        this.height = json.height;
-        this.cells = json.cells;
-        this.player = json.player;
-        if (this.width <= 0) throw new Error("width must be positive");
-        if (this.height <= 0) throw new Error("height must be positive");
-        if (this.cells.length != this.width * this.height) throw new Error("Illegal cell size");
-        this.winner = json.winner;
-        this.fillHtml(this.grid, this.winnerSpan)
-    }
-
-    /** Fills the given HTML grid (buttons) adding the contents matching
-      * the game state. */
-    fillHtml() {
-        var board = this.grid.getElementsByTagName("button");
-        if (board.length != this.cells.length) throw new Error("Size mismatch");
+     * Updates the view (button elements) to match the game state.
+     * 
+     * @param {ConnectFourModel} game
+     */
+     update(game) {
+        let board = this.grid.getElementsByTagName("button");
+        if (board.length != game.cells.length) throw new Error("Size mismatch");
         for (let i = 0; i < board.length; i++) {
-            var state = this.cells[i];
-            var boardCell = board[i];
+            let state = game.cells[i];
+            let boardCell = board[i];
             boardCell.setAttribute("data-state", state.toString());
+            // boardCell.innerHTML = state.toString();
         }
-        if (this.winner) {
-            this.winnerSpan.classList.add("won");
-            this.winnerSpan.getElementsByClassName("name").item(0).innerHTML = this.winner == 1 ? "Gelb" : "Rot";
+        if (game.winner) {
+            this.winner.classList.add("won");
+            this.winner.getElementsByClassName("name").item(0).innerHTML = game.winner == 1 ? "Gelb" : "Rot";
+        } else {
+            this.winner.classList = [];
+            this.winner.getElementsByClassName("name").item(0).innerHTML = "Vier";
         }
-
     }
 }
 
-/** A connection to the ConnectFour server. */
-class ConnectFourConnection {
-    constructor(game, stateArea) {
-        this.game = game;
-        this.stateArea = stateArea;
+/** A connect-four controller that communicates with the game server. */
+class ConnectFourRemoteController {
+    /**
+     * Creates a new remote controller.
+     * 
+     * @param {ConnectFourView} view 
+     * @param {Element} stateArea
+     */
+    constructor() {
+        this.views = [];
+        this.stateAreas= [];
         this.state = "initial";
-        this.stateArea.innerHTML = this.state;
     }
 
     updateStateFromJson(json) {
@@ -66,10 +66,22 @@ class ConnectFourConnection {
         }
         if (newState != this.state) {
             this.state = newState;
-            this.stateArea.innerHTML = this.state;
-            game.update(json);
+            this.updateViews(json);
         }
     }
+
+    /**
+     * Notifies all views that the game has changed.
+     */
+    updateViews(json) {
+        for (let view of this.views) {
+            view.update(json);
+        }
+        for (let stateArea of this.stateAreas) {
+            stateArea.innerHTML = this.state;
+        }
+    }
+    
     async newGame() {
         var response = await fetch("/newgame");
         var json = await response.json();
@@ -111,29 +123,55 @@ class ConnectFourConnection {
         this.pollState();
     }
 
-    installHandlers(grid) {
+    /**
+     * Connects this controller to a new state area.
+     * 
+     * @param {Element} stateArea
+     */
+    connectToStateArea(stateArea) {
+        this.stateAreas.push(stateArea);
+        stateArea.innerHTML = this.state;
+    }
+
+    /**
+     * Connects this controller to a button to start a new game.
+     * 
+     * @param {Element} newGameButton
+     */
+    connectToNewGameButton(newGameButton) {
+        newGameButton.addEventListener("click", () => this.newGame());
+    }
+
+    /**
+     * Connects this controller to a new view and listens for user interactions
+     * in the view.
+     * 
+     * @param {ConnectFourView} view 
+     */
+     connectToView(view) {
+        this.views.push(view);
         let index = 0;
-        for (let button of grid.getElementsByTagName("button")) {
+        this.currentGame();
+        for (let button of view.grid.getElementsByTagName("button")) {
             // Use a constant value that will be captured in the 
-            // event listener.
-            const buttonIndex = index;
-            button.addEventListener("click", () => {
-                this.move(buttonIndex % game.width);
-            });
+            // event listener. Use modul operator to compute the column
+            // from the button index.
+            const column = index % 7;
+            button.addEventListener("click", () => this.move(column));
             index++;
         }        
     }
 }
 
-var game = new ConnectFour();
-var grid = document.getElementById("grid")
-var winner = document.getElementById("winner")
-var stateArea = document.getElementById("state");
+let controller = new ConnectFourRemoteController();
 
-game.connectToDom(grid, winner);
+let grid = document.getElementById("grid")
+let winner = document.getElementById("winner")
+let view = new ConnectFourView(grid, winner);
+controller.connectToView(view);
 
-var connection = new ConnectFourConnection(game, stateArea);
-connection.installHandlers(grid);
+let stateArea = document.getElementById("state");
+controller.connectToStateArea(stateArea);
 
-var newGameButton = document.getElementById("newgame");
-newGameButton.addEventListener("click", () => {connection.newGame();});
+let newGameButton = document.getElementById("newgame");
+controller.connectToNewGameButton(newGameButton);
