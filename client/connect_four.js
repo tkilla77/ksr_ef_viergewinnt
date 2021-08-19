@@ -14,31 +14,11 @@ class ConnectFourView {
     }
 
     /**
-     * Connects this view to the given game.
-     * 
-     * @param {ConnectFourModel} game 
-     */
-    connectToGame(game) {
-        let index = 0;
-        for (let button of this.grid.getElementsByTagName("button")) {
-            // Use a constant value that will be captured in the 
-            // event listener. Use modul operator to compute the column
-            // from the button index.
-            const column = index % game.width;
-            button.addEventListener("click", () => {
-                game.insertPiece(column);
-                this.fillHtml(game);
-            });
-            index++;
-        }        
-    }
-
-    /**
      * Updates the view (button elements) to match the game state.
      * 
-     * @param {ConnectFourModel} game 
+     * @param {ConnectFourModel} game
      */
-     fillHtml(game) {
+     update(game) {
         let board = this.grid.getElementsByTagName("button");
         if (board.length != game.cells.length) throw new Error("Size mismatch");
         for (let i = 0; i < board.length; i++) {
@@ -55,9 +35,59 @@ class ConnectFourView {
 }
 
 /**
+ * The controller manages the connection between one game of connect-four
+ * (the model) and any number of views.
+ */
+class ConnectFourController {
+    /**
+     * Creates a new controller for connect four.
+     * 
+     * @param {ConnectFourModel} model 
+     */
+    constructor(model) {
+        this.model = model;
+        this.views = [];
+        this.model.addEventListener("statechange", () => {
+            this.updateViews();
+        });
+    }
+
+    /**
+     * Notifies all views that the game has changed.
+     */
+    updateViews() {
+        for (let view of this.views) {
+            view.update(this.model);
+        }
+    }
+
+    /**
+     * Connects this controller to a new view and listens for user interactions
+     * in the view.
+     * 
+     * @param {ConnectFourView} view 
+     */
+    connectToView(view) {
+        this.views.push(view);
+        view.update(this.model);
+        let index = 0;
+        for (let button of view.grid.getElementsByTagName("button")) {
+            // Use a constant value that will be captured in the 
+            // event listener. Use modul operator to compute the column
+            // from the button index.
+            const column = index % this.model.width;
+            button.addEventListener("click", () => {
+                this.model.insertPiece(column);
+            });
+            index++;
+        }        
+    }
+}
+
+/**
  * State and behavior for a game of connect-four.
  */
-class ConnectFourModel {
+class ConnectFourModel extends EventTarget {
     /**
      * Expects JSON with properties
      * width > 0
@@ -66,6 +96,7 @@ class ConnectFourModel {
      *        with 0=empty,1=player1,2=player2
      */ 
     constructor(json) {
+        super();
         this.width = json.width;
         this.height = json.height;
         this.cells = json.cells;
@@ -94,6 +125,8 @@ class ConnectFourModel {
                 this.player = this.player == 1 ? 2 : 1;
                 // 3) Check if the game has ended.
                 this.checkWinner(row, column);
+                // 4) Signal state change.
+                this.dispatchEvent(new CustomEvent("statechange"));
                 return;
             }
         }
@@ -168,4 +201,5 @@ let game = new ConnectFourModel(gameJson);
 let grid = document.getElementById("grid")
 let winner = document.getElementById("winner")
 const view = new ConnectFourView(grid, winner);
-view.connectToGame(game);
+const controller = new ConnectFourController(game);
+controller.connectToView(view);
