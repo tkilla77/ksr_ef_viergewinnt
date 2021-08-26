@@ -1,7 +1,7 @@
 /**
  * The UI of a game of connect-four.
  */
- class ConnectFourView {
+class ConnectFourView {
     /**
      * Creates a new view that will update the given button grid and winner area.
      *
@@ -18,7 +18,7 @@
      * 
      * @param {ConnectFourModel} game
      */
-     update(game) {
+    update(game) {
         let board = this.grid.getElementsByTagName("button");
         if (board.length != game.cells.length) throw new Error("Size mismatch");
         for (let i = 0; i < board.length; i++) {
@@ -47,7 +47,7 @@ class ConnectFourRemoteController {
      */
     constructor() {
         this.views = [];
-        this.stateAreas= [];
+        this.stateAreas = [];
         this.state = "initial";
     }
 
@@ -81,7 +81,7 @@ class ConnectFourRemoteController {
             stateArea.innerHTML = this.state;
         }
     }
-    
+
     async newGame() {
         var response = await fetch("/newgame");
         var json = await response.json();
@@ -102,9 +102,9 @@ class ConnectFourRemoteController {
 
     // wait ms milliseconds
     wait(ms) {
-        return new Promise(r => setTimeout(r, ms));
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
-    
+
     /** Poll the current game while it's their turn. */
     async pollState() {
         while (this.state == "theirturn" || this.state == "waiting") {
@@ -112,12 +112,12 @@ class ConnectFourRemoteController {
             await this.fetchCurrentGame();
         }
     }
-    
+
     async move(column) {
         if (this.state != "myturn") {
             throw new Error("not my turn");
         }
-        var response = await fetch("/move?column="+column);
+        var response = await fetch("/move?column=" + column);
         var json = await response.json();
         this.updateStateFromJson(json);
         this.pollState();
@@ -148,7 +148,7 @@ class ConnectFourRemoteController {
      * 
      * @param {ConnectFourView} view 
      */
-     connectToView(view) {
+    connectToView(view) {
         this.views.push(view);
         let index = 0;
         this.currentGame();
@@ -159,7 +159,7 @@ class ConnectFourRemoteController {
             const column = index % 7;
             button.addEventListener("click", () => this.move(column));
             index++;
-        }        
+        }
     }
 }
 
