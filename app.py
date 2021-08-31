@@ -28,7 +28,7 @@ def currentgame():
     app.logger.info(f"found current game for {session_id}, is player {game.getPlayer(session_id)}")
     return game.toJson(session_id)
 
-@app.route("/newgame")
+@app.route("/newgame", methods=['POST'])
 def newgame():
     if 'session_id' in session:
         session_id = session['session_id']
@@ -58,7 +58,7 @@ def newgame():
 
     return game.toJson(session_id)
 
-@app.route("/move")
+@app.route("/move", methods=['POST'])
 def move():
     if not 'session_id' in session:
         abort(503)

@@ -49,6 +49,12 @@ class ConnectFourRemoteController {
         this.views = [];
         this.stateAreas = [];
         this.state = "initial";
+        this.postOptions = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+        }
     }
 
     updateStateFromJson(json) {
@@ -83,7 +89,7 @@ class ConnectFourRemoteController {
     }
 
     async newGame() {
-        var response = await fetch("/newgame");
+        var response = await fetch("/newgame", this.postOptions);
         var json = await response.json();
         this.updateStateFromJson(json);
         this.pollState();
@@ -117,7 +123,7 @@ class ConnectFourRemoteController {
         if (this.state != "myturn") {
             throw new Error("not my turn");
         }
-        var response = await fetch("/move?column=" + column);
+        var response = await fetch("/move?column=" + column, this.postOptions);
         var json = await response.json();
         this.updateStateFromJson(json);
         this.pollState();
