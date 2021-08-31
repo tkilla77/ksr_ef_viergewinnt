@@ -58,6 +58,7 @@ class ConnectFourRemoteController {
     }
 
     updateStateFromJson(json) {
+        this.json = json
         var newState;
         if (json.winner == json.player) {
             newState = "won"
@@ -96,12 +97,23 @@ class ConnectFourRemoteController {
     }
 
     async currentGame() {
-        this.fetchCurrentGame();
-        this.pollState();
+        if (!this.json) {
+            var response = await fetch("/listgames");
+            var json = await response.json();
+            if (json.games.length > 0) {
+                this.json = {
+                    "id": json.games[0].split("/")[2]
+                };
+            }
+        }
+        if (this.json) {
+            this.fetchCurrentGame();
+            this.pollState();
+        }
     }
 
     async fetchCurrentGame() {
-        var response = await fetch("/currentgame");
+        var response = await fetch("/game/" + this.json.id);
         var json = await response.json();
         this.updateStateFromJson(json);
     }
@@ -123,7 +135,7 @@ class ConnectFourRemoteController {
         if (this.state != "myturn") {
             throw new Error("not my turn");
         }
-        var response = await fetch("/move?column=" + column, this.postOptions);
+        var response = await fetch("/move/" + this.json.id + "/" + column, this.postOptions);
         var json = await response.json();
         this.updateStateFromJson(json);
         this.pollState();

@@ -1,5 +1,6 @@
 import json
 import io
+import uuid
 
 class ConnectFour:
     def __init__(self, width, height):
@@ -10,9 +11,10 @@ class ConnectFour:
         self.winner = None
         self.player1 = None
         self.player2 = None
+        self.id = uuid.uuid4()
     
-    def toJson(self, session_id):
-        return json.dumps({
+    def toDict(self, session_id):
+        return {
             "width": self.width,
             "height": self.height,
             "cells": self.cells,
@@ -20,7 +22,8 @@ class ConnectFour:
             "player": self.getPlayer(session_id),
             "winner": self.winner,
             "state": self.getState(),
-        }, indent=4)
+            "id": str(self.id),
+        }
     
     def getState(self):
         if self.winner:
