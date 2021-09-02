@@ -110,11 +110,11 @@ def move(game_id, column):
     except Exception as err:
         # Attempted to access a game that's not theirs...
         app.logger.warning(err, exc_info=True)
-        abort(Response(err.args, 503)) # not your game
+        abort(Response(err.args, 403)) # not your game
 
     try:
         game.move(player, column)
         return jsonify(game.toDict(session_id))
     except Exception as err:
         app.logger.warning(err, exc_info=True)
-        abort(Response(err.args, 503))
+        abort(Response(err.args, 403))
