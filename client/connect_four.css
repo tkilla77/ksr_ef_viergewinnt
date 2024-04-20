@@ -5,29 +5,8 @@
     --player1-color: yellow;
     --player2-color: red;
     --shadow-color: rgba(0, 0, 0, 0.445);
-    --stone-size: 25px;
-    --board-spacing: 5px;
-}
-
-@media all and (min-width: 360px) and (min-height: 300px) {
-    :root {
-        --stone-size: 30px;
-        --board-spacing: 7px;
-    }
-}
-
-@media all and (min-width: 600px) and (min-height: 500px) {
-    :root {
-        --stone-size: 50px;
-        --board-spacing: 10px;
-    }
-}
-
-@media all and (min-width: 800px) and (min-height: 650px) {
-    :root {
-        --stone-size: 70px;
-        --board-spacing: 15px;
-    }
+    --stone-size: 8vmin;
+    --board-spacing: 1vmin;
 }
 
 body {
@@ -47,7 +26,7 @@ body {
     border: solid var(--board-spacing) var(--plastic-color);
     background-color: var(--plastic-color);
     border-radius: calc(var(--stone-size) / 2 + calc(var(--board-spacing) * 2));
-	box-shadow: 2px 2px 5px 5px var(--shadow-color);
+	box-shadow: 0.5vmin 0.5vmin 1vmin 1vmin var(--shadow-color);
 }
 
 .connect_four div {
@@ -60,10 +39,10 @@ body {
     height: var(--stone-size);
     min-width: var(--stone-size);
     margin: var(--board-spacing);
-    border: solid 0px var(--plastic-color);
+    border: none;
     border-radius: calc(var(--stone-size) / 2);
     background-color: var(--background-color);
-	box-shadow: 5px 5px 10px var(--shadow-color) inset, 0 0 1px 3px var(--shadow-color);
+	box-shadow: 1vmin 1vmin 2vmin var(--shadow-color) inset, 0 0 0.5vmin 0.5vmin var(--shadow-color);
 }
 .connect_four button[data-state="1"] {
     background-color: var(--player1-color);
