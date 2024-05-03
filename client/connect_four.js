@@ -1,205 +1,131 @@
-/**
- * The UI of a game of connect-four.
- */
-class ConnectFourView {
-    /**
-     * Creates a new view that will update the given button grid and winner area.
-     *
-     * @param {Element} grid 
-     * @param {Element} winner 
-     */
-    constructor(grid, winner) {
-        this.grid = grid;
-        this.winner = winner;
-    }
-
-    /**
-     * Updates the view (button elements) to match the game state.
-     * 
-     * @param {ConnectFourModel} game
-     */
-     update(game) {
-        let board = this.grid.getElementsByTagName("button");
-        if (board.length != game.cells.length) throw new Error("Size mismatch");
-        for (let i = 0; i < board.length; i++) {
-            let state = game.cells[i];
-            let boardCell = board[i];
-            boardCell.setAttribute("data-state", state.toString());
-            boardCell.innerHTML = state.toString();
-        }
-        if (game.winner) {
-            this.winner.classList.add("won");
-            this.winner.getElementsByClassName("name").item(0).innerHTML = game.winner == 1 ? "Gelb" : "Rot";
-        }
-    }
-}
-
-/**
- * The controller manages the connection between one game of connect-four
- * (the model) and any number of views.
- */
-class ConnectFourController {
-    /**
-     * Creates a new controller for connect four.
-     * 
-     * @param {ConnectFourModel} model 
-     */
-    constructor(model) {
-        this.model = model;
-        this.views = [];
-        this.model.addEventListener("statechange", () => {
-            this.updateViews();
-        });
-    }
-
-    /**
-     * Notifies all views that the game has changed.
-     */
-    updateViews() {
-        for (let view of this.views) {
-            view.update(this.model);
-        }
-    }
-
-    /**
-     * Connects this controller to a new view and listens for user interactions
-     * in the view.
-     * 
-     * @param {ConnectFourView} view 
-     */
-    connectToView(view) {
-        this.views.push(view);
-        view.update(this.model);
-        let index = 0;
-        for (let button of view.grid.getElementsByTagName("button")) {
-            // Use a constant value that will be captured in the 
-            // event listener. Use modul operator to compute the column
-            // from the button index.
-            const column = index % this.model.width;
-            button.addEventListener("click", () => {
-                this.model.insertPiece(column);
-            });
-            index++;
-        }        
-    }
-}
-
-/**
- * State and behavior for a game of connect-four.
- */
-class ConnectFourModel extends EventTarget {
-    /**
-     * Expects JSON with properties
-     * width > 0
-     * height > 0
-     * cells: a number array with size width*height and contents of 0-2
-     *        with 0=empty,1=player1,2=player2
-     */ 
-    constructor(json) {
-        super();
-        this.width = json.width;
-        this.height = json.height;
-        this.cells = json.cells;
-        this.player = json.player;
-        if (this.width <= 0) throw new Error("width must be positive");
-        if (this.height <= 0) throw new Error("height must be positive");
-        if (this.cells.length != this.width * this.height) throw new Error("Illegal cell size");
-    }
-
-    /**
-     * Insert a game piece in the given column.
-     */
-     insertPiece(column) {
-        if (this.winner) {
-            throw new Error(`Game has already ended`);
-        }
-        let cell = undefined;
-        for (let row = this.height - 1; row >= 0; row--) {
-            let lowestEmptyCellIndex = this.width * row + column;
-            cell = this.cells[lowestEmptyCellIndex];
-            if (cell == 0) {
-                // We found an empty cell:
-                // 1) Change the state of the cell.
-                this.cells[lowestEmptyCellIndex] = this.player;
-                // 2) Toggle the next player.
-                this.player = this.player == 1 ? 2 : 1;
-                // 3) Check if the game has ended.
-                this.checkWinner(row, column);
-                // 4) Signal state change.
-                this.dispatchEvent(new CustomEvent("statechange"));
-                return;
-            }
-        }
-        // Otherwise: column is already full.
-        throw new Error(`illegal column ${column}`);
-    }
-
-    /* Check if there is a winner after filling the cell at row / column.
-       Sets ConnectFour.winner to the player winning. */
-    checkWinner(row, column) {
-        const player = this.cells[row * this.width + column];
-
-        let countFunction = (colIncrement, rowIncrement) => {
-            return this.countSameDirection(player, column, row, colIncrement, rowIncrement);
-        }
-
-        const increment = i => i+1;
-        const decrement = i => i-1;
-        const identity = i => i;
-
-        // Count the number of equal slots in all 8 directions.
-        let upperLeft = countFunction(decrement, decrement);    
-        let up = countFunction(identity, decrement);
-        let upperRight = countFunction(increment, decrement);
-        let left = countFunction(decrement, identity);
-        let right = countFunction(increment, identity);
-        let lowerLeft = countFunction(decrement, increment);
-        let down = countFunction(identity, increment);
-        let lowerRight = countFunction(increment, increment);
-
-        // We have a winner if the total is 3 or more in any of the four
-        // directions (the 4th is the current cell).
-        if (upperLeft + lowerRight >= 3
-                || up + down >= 3
-                || upperRight + lowerLeft >= 3
-                || left + right >= 3) {
-            this.winner = player;
-        }
-    }
-
-    /* Counts the winning streak in one direction defined by the
-       increment. */
-    countSameDirection(player, col, row, colIncrement, rowIncrement) {
-        // Count the number of equal slots in one direction.
-        let count = 0;
-        while (count < 3) {
-            // Move in the given direction.
-            col = colIncrement(col);
-            row = rowIncrement(row);
-            // Check if we are still on the board.
-            if (col < 0 || col >= this.width || row < 0 || row >= this.height) {
-                break;
-            }
-            // Look at the current cell and bail out if it's not our color.
-            if (this.cells[row * this.width + col] != player) {
-                break;
-            }
-            // Otherwise: continue
-            count++;
-        }
-        return count;
-    }
-}
-
-let gameJson = {
+/** Everything necessary to capture the state of the game. */
+let gameState = {
     width: 7,
     height: 6,
+    // The cells from top-left to bottom-right.
     cells: new Array(42).fill(0),
     player: 1,
+    winner: 0,
 }
-let game = new ConnectFourModel(gameJson);
+
+/** Checks if there is a winner after filling the cell at row / column.
+ *  Sets state.winner to the player winning. */
+function checkWinner(state, row, column) {
+    const player = state.cells[row * state.width + column]
+
+    let countFunction = (colIncrement, rowIncrement) => {
+        return countSameDirection(state, player, row, column, rowIncrement, colIncrement)
+    }
+
+    const increment = i => i+1
+    const decrement = i => i-1
+    const identity = i => i
+
+    // Count the number of equal slots in all 8 directions.
+    let upperLeft = countFunction(decrement, decrement)
+    let up = countFunction(identity, decrement)
+    let upperRight = countFunction(increment, decrement)
+    let left = countFunction(decrement, identity)
+    let right = countFunction(increment, identity)
+    let lowerLeft = countFunction(decrement, increment)
+    let down = countFunction(identity, increment)
+    let lowerRight = countFunction(increment, increment)
+
+    // We have a winner if the total is 3 or more in any of the four
+    // directions (the 4th is the current cell).
+    if (upperLeft + lowerRight >= 3
+            || up + down >= 3
+            || upperRight + lowerLeft >= 3
+            || left + right >= 3) {
+        state.winner = player
+    }
+}
+
+/** Counts the winning streak in one direction defined by the increment. */
+function countSameDirection(state, player, row, col, rowIncrement, colIncrement) {
+    // Count the number of equal slots in one direction.
+    let count = 0
+    while (count < 3) {
+        // Move in the given direction.
+        col = colIncrement(col)
+        row = rowIncrement(row)
+        // Check if we are still on the board.
+        if (col < 0 || col >= state.width || row < 0 || row >= state.height) {
+            break
+        }
+        // Look at the current cell and bail out if it's not our color.
+        if (state.cells[row * state.width + col] != player) {
+            break
+        }
+        // Otherwise: continue
+        count++
+    }
+    return count
+}
+
+/** Update the HTML (cell content and data-state attribute) to match the
+ *  game state. */
+function updateUi(state, grid, winner) {
+    let board = grid.getElementsByTagName("button")
+    if (board.length != state.cells.length) throw new Error("Size mismatch")
+    for (let i = 0; i < board.length; i++) {
+        let stateCell = state.cells[i]
+        let boardCell = board[i]
+        boardCell.setAttribute("data-state", stateCell.toString())
+        boardCell.innerHTML = stateCell.toString()
+    }
+    if (state.winner) {
+        winner.classList.add("won")
+        winner.getElementsByClassName("name").item(0).innerHTML = state.winner == 1 ? "Gelb" : "Rot"
+    }
+}
+
+/** Called whenever the game buttons (cells) are clicked. */
+function handleButtonClick(state, column, grid, winner) {
+    if (state.winner != 0) {
+        return
+    }
+    // Search for the lowest empty row in column.
+    for (let row = state.height - 1; row >= 0; row--) {
+        let lowestEmptyCellIndex = state.width * row + column
+        let cell = state.cells[lowestEmptyCellIndex]
+        if (cell == 0) {
+            // We found an empty cell:
+            // 1) Change the state of the cell.
+            state.cells[lowestEmptyCellIndex] = state.player
+            // 2) Toggle the next player.
+            state.player = state.player == 1 ? 2 : 1
+            // 3) TODO check winner
+            checkWinner(state, row, column)
+            // 4) TODO update user interface
+            updateUi(state, grid, winner)
+            return
+        }
+    }
+    // Otherwise: column is already full.
+    throw new Error(`illegal column ${column}`)
+}
+
+/** Adds a click handler to each cell / button of the game. */
+function attachListeners(state, grid, winner) {
+    let index = 0
+    for (let button of grid.getElementsByTagName("button")) {
+        // Use a constant value that will be captured in the 
+        // event listener. Use modul operator to compute the column
+        // from the button index.
+        const column = index % state.width
+        button.addEventListener("click", () => {
+            handleButtonClick(state, column, grid, winner)
+        })
+        index++
+    }        
+}
+
+// Find the game grid and winner message elements.
 let grid = document.getElementById("grid")
 let winner = document.getElementById("winner")
-const view = new ConnectFourView(grid, winner);
-const controller = new ConnectFourController(game);
-controller.connectToView(view);
+
+// Make the UI match the initial game state.
+updateUi(gameState, grid, winner)
+// Attach click handlers.
+attachListeners(gameState, grid, winner)
